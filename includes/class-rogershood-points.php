@@ -7,12 +7,7 @@ class Rogershood_Points {
 	protected $total_points = 0;
 	protected $redeemed_points = 0;
 
-	protected $table_name;
-
 	public function __construct( $user_id = null ) {
-		global $wpdb;
-		$this->table_name = $wpdb->prefix . 'rogershood_user_points';
-
 		// If user_id is passed, initialize the user's points data
 		if ( $user_id ) {
 			$this->find( $user_id );
@@ -22,7 +17,7 @@ class Rogershood_Points {
 	public function find( $user_id ) {
 		global $wpdb;
 
-		$sql = $wpdb->prepare( "SELECT * FROM {$this->table_name} WHERE user_id = %d", $user_id );
+		$sql = $wpdb->prepare( "SELECT * FROM " . USER_POINTS_TABLE . " WHERE user_id = %d", array( $user_id ) );
 		$row = $wpdb->get_row( $sql );
 
 		// Assign properties based on the query result or set defaults
@@ -108,7 +103,7 @@ class Rogershood_Points {
 
 		// Attempt to update the row
 		$updated = $wpdb->update(
-			$this->table_name,
+			USER_POINTS_TABLE,
 			array(
 				'current_points'  => $this->current_points,
 				'total_points'    => $this->total_points,
@@ -122,7 +117,7 @@ class Rogershood_Points {
 		// If the update was not successful, insert a new row
 		if ( $updated === false || $updated === 0 ) {
 			$wpdb->insert(
-				$this->table_name,
+				USER_POINTS_TABLE,
 				array(
 					'user_id'         => $this->user_id,
 					'current_points'  => $this->current_points,

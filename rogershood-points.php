@@ -10,12 +10,17 @@ defined( 'ABSPATH' ) || exit;
 
 // define plugin dir
 define( 'RH_POINTS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'RH_POINTS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+
+global $wpdb;
+define( 'USER_POINTS_TABLE', $wpdb->prefix . 'rogershood_user_points' );
+define( 'USER_POINTS_TRANSACTIONS_TABLE', $wpdb->prefix . 'rogershood_user_points_transactions' );
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-rogershood-points.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-rogershood-points-transaction.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/helper-functions.php';
 
-require_once plugin_dir_path(__FILE__) . 'admin/class-rogershood-points-admin.php';
+require_once plugin_dir_path( __FILE__ ) . 'admin/class-rogershood-points-admin.php';
 require_once plugin_dir_path( __FILE__ ) . 'admin/class-rogershood-points-migrate.php';
 
 require_once plugin_dir_path( __FILE__ ) . 'public/class-rogershood-points-checkout.php';
@@ -55,10 +60,7 @@ function rh_points_install() {
 
 	$charset_collate = $wpdb->get_charset_collate();
 
-	$table_name1 = $wpdb->prefix . 'rogershood_user_points';
-	$table_name2 = $wpdb->prefix . 'rogershood_points_transactions';
-
-	$sql1 = "CREATE TABLE IF NOT EXISTS $table_name1 (
+	$sql1 = "CREATE TABLE IF NOT EXISTS " . USER_POINTS_TABLE. " (
         user_id BIGINT(20) UNSIGNED NOT NULL,
         current_points INT(11) NOT NULL,
         total_points INT(11) NOT NULL,
@@ -66,12 +68,12 @@ function rh_points_install() {
         PRIMARY KEY (user_id)
     ) $charset_collate;";
 
-	$sql2 = "CREATE TABLE IF NOT EXISTS $table_name2 (
+	$sql2 = "CREATE TABLE IF NOT EXISTS " . USER_POINTS_TRANSACTIONS_TABLE. " (
         id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         user_id BIGINT(20) UNSIGNED NOT NULL,
         points INT(11) NOT NULL,
         transaction_type VARCHAR(20) NOT NULL, /* 'credit' or 'debit' */
-        action_type VARCHAR(255) NOT NULL, /* 'order' or 'signup' */
+        action_type VARCHAR(255) NOT NULL, 
         order_id BIGINT(20) UNSIGNED,
         transaction_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),

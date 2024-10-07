@@ -165,21 +165,27 @@ class Rogershood_Points_Admin {
 
             <h2>Points Log</h2>
             <div>
-                <div style="display:grid; grid-template-columns: repeat(3, 200px); font-weight: bold;">
+                <div style="display:grid; grid-template-columns: 200px 100px 400px; font-weight: bold;">
                     <p>Date</p>
-                    <p>Action</p>
                     <p>Points</p>
+                    <p>Action</p>
                 </div>
 
 				<?php
 				foreach ( $transactions as $transaction ) {
 					$action = $transaction->get_transaction_action_label();
+
+                    if (!empty($transaction->get_order_id())) {
+                        $order_admin_url = admin_url('admin.php?page=wc-orders&action=edit&id=' . $transaction->get_order_id() );
+                        $action .= ' (Order <a href="' . $order_admin_url . '">#' . $transaction->get_order_id() . '</a>)';
+//                        $action .= ' (Order #' . $transaction->get_order_id() . ')';
+                    }
 					$points = $transaction->get_transaction_type() === 'debit' ? '-' . $transaction->get_points() : $transaction->get_points();
 					?>
-                    <div style="display:grid; grid-template-columns: repeat(3, 200px)">
+                    <div style="display:grid; grid-template-columns: 200px 100px 400px">
                         <p><?php echo $transaction->get_transaction_date(); ?></p>
-                        <p><?php echo $action ?></p>
                         <p><?php echo $points ?></p>
+                        <p><?php echo $action ?></p>
                     </div>
 					<?php
 				}

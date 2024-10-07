@@ -40,7 +40,7 @@ class Rogershood_Points_Checkout {
 
 	public function enqueue_scripts() {
 		if ( is_checkout() || is_cart() ) {
-			wp_enqueue_script( 'rogershood-points-js', RH_POINTS_PLUGIN_DIR . 'public/assets/rogershood-points.js', array( 'jquery' ), '1.0', true );
+			wp_enqueue_script( 'rogershood-points-js', RH_POINTS_PLUGIN_URL . 'public/assets/points.js', array( 'jquery' ), '1.0', true );
 			wp_localize_script( 'rogershood-points-js', 'rogershood_points', array(
 				'ajax_url'            => admin_url( 'admin-ajax.php' ),
 				'redeem_points_nonce' => wp_create_nonce( 'redeem_points_nonce' ),
@@ -150,15 +150,15 @@ class Rogershood_Points_Checkout {
 			return;
 		}
 
-		// ok, so if they have already redeemed points, but added items to the cart, they need to be able to redeem MORE points
-		// Redeemed points
-		// - order is already free
-		// - order is not free
-		// Have not redeemed points yet
-
 		$redeemed_points       = WC()->session->get( 'redeemed_points', 0 );
 		$remaining_user_points = $user_points - $redeemed_points;
 
+        // user has redeemed all points, return
+        if ($remaining_user_points === 0) {
+            return;
+        }
+
+        // user has redeemed points, but has more remaining points they can redeem
 		if ( $redeemed_points > 0 && $remaining_user_points > 0 ) {
 			$redeemed_points_amount = $redeemed_points / $required_points_per_dollar;
 			$cart_total             = $cart_total - $redeemed_points_amount;

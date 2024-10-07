@@ -9,11 +9,8 @@ class Rogershood_Points_Transaction {
 	protected $action_type;
 	protected $order_id;
 	protected $transaction_date;
-	protected $table_name;
 
 	public function __construct( $user_id = null, $points = null, $transaction_type = null, $action_type = null, $order_id = null ) {
-		global $wpdb;
-		$this->table_name = $wpdb->prefix . 'rogershood_points_transactions';
 
 		$this->user_id          = $user_id;
 		$this->points           = $points;
@@ -25,9 +22,8 @@ class Rogershood_Points_Transaction {
 
 	public static function find( $id ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'rogershood_points_transactions';
 
-		$sql = $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $id );
+		$sql = $wpdb->prepare( "SELECT * FROM %s WHERE id = %d", array( USER_POINTS_TRANSACTIONS_TABLE, $id ) );
 		$row = $wpdb->get_row( $sql, ARRAY_A );
 
 		// If found, return a new instance populated with the data
@@ -64,7 +60,7 @@ class Rogershood_Points_Transaction {
 
 		if ( $this->id ) {
 			// Update existing transaction
-			$wpdb->update( $this->table_name, $data, array( 'id' => $this->id ), array(
+			$wpdb->update( USER_POINTS_TRANSACTIONS_TABLE, $data, array( 'id' => $this->id ), array(
 				'%d',
 				'%d',
 				'%s',
@@ -74,7 +70,7 @@ class Rogershood_Points_Transaction {
 			), array( '%d' ) );
 		} else {
 			// Insert new transaction
-			$wpdb->insert( $this->table_name, $data, array( '%d', '%d', '%s', '%s', '%s', '%d' ) );
+			$wpdb->insert( USER_POINTS_TRANSACTIONS_TABLE, $data, array( '%d', '%d', '%s', '%s', '%s', '%d' ) );
 
 			$this->id = $wpdb->insert_id;
 		}
@@ -89,10 +85,9 @@ class Rogershood_Points_Transaction {
 
 	public static function find_by( $conditions, $limit = 10, $offset = 0, $orderby = '', $order = 'ASC' ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'rogershood_points_transactions';
 
-		$query  = "SELECT * FROM {$table_name} WHERE 1=1";
-		$values = [];
+		$query  = $wpdb->prepare( "SELECT * FROM " . USER_POINTS_TRANSACTIONS_TABLE. " WHERE 1=1" );
+		$values = array();
 
 		foreach ( $conditions as $column => $value ) {
 			$query    .= " AND {$column} = %s";
@@ -100,7 +95,7 @@ class Rogershood_Points_Transaction {
 		}
 
 		if ( ! empty( $orderby ) ) {
-			$query .= " ORDER BY $orderby $order";
+			$query .= esc_sql( " ORDER BY {$orderby} {$order}" );
 		}
 
 		if ( $limit > - 1 ) {

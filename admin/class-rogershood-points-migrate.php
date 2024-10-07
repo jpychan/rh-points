@@ -6,26 +6,43 @@ if ( ! class_exists( 'WP_CLI' ) ) {
 
 class Rogershood_Points_Migrate_Command extends WP_CLI_Command {
 
+
+	/**
+	 * Migrate points and transactions from the WPLoyalty plugin.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp rogershood points migrate_all
+	 *
+	 * @subcommand migrate_all
+	 */
+	public function migrate_all() {
+
+		WP_CLI::log( 'Migrating points...' );
+//		$this->migrate_points();
+		WP_CLI::log( 'Migrating transactions...' );
+		$this->migrate_transactions();
+	}
+
 	/**
 	 * Migrate points from the WPLoyalty plugin.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp rogershood points migrate
+	 *     wp rogershood points migrate points
 	 *
-	 * @subcommand migrate
+	 * @subcommand migrate_points
 	 */
 	public function migrate_points() {
 		global $wpdb;
 
 		$wployalty_table = $wpdb->prefix . 'wlr_users';
 		$user_table      = $wpdb->prefix . 'users';
-		$points_table    = $wpdb->prefix . 'rogershood_user_points';
 		$batch_size      = 2000;
 		$offset          = 0;
 
 		// truncate the points table
-		$wpdb->query( "TRUNCATE TABLE $points_table" );
+		$wpdb->query( "TRUNCATE TABLE " . USER_POINTS_TABLE );
 
 		do {
 			// Fetch 2000 records at a time with the current offset
@@ -42,7 +59,7 @@ class Rogershood_Points_Migrate_Command extends WP_CLI_Command {
 			foreach ( $rows as $row ) {
 				// Insert row into rogershood_user_points
 				$wpdb->insert(
-					$points_table,
+					USER_POINTS_TABLE,
 					array(
 						'user_id'         => $row['ID'],
 						'current_points'  => $row['points'] ?? 0,
@@ -73,17 +90,16 @@ class Rogershood_Points_Migrate_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand migrate_transactions
 	 */
-	public function migrate_transactions( $args, $assoc_args ) {
+	public function migrate_transactions() {
 		global $wpdb;
 
 		$wployalty_table    = $wpdb->prefix . 'wlr_earn_campaign_transaction';
 		$user_table         = $wpdb->prefix . 'users';
-		$transactions_table = $wpdb->prefix . 'rogershood_points_transactions';
 		$batch_size         = 2000;
 		$offset             = 0;
 
 		// truncate transactions table
-		$wpdb->query( "TRUNCATE TABLE $transactions_table" );
+		$wpdb->query( "TRUNCATE TABLE " . USER_POINTS_TRANSACTIONS_TABLE );
 
 		do {
 			// Fetch 2000 records at a time with the current offset
@@ -101,14 +117,14 @@ class Rogershood_Points_Migrate_Command extends WP_CLI_Command {
 
 				// Insert row into rogershood_user_points
 				$wpdb->insert(
-					$transactions_table,
+					USER_POINTS_TRANSACTIONS_TABLE,
 					array(
 						'user_id'          => $row['ID'],
 						'action_type'      => $row['action_type'],
 						'transaction_type' => $row['transaction_type'],
 						'order_id'         => $row['order_id'],
 						'points'           => $row['points'],
-						'transaction_date' => date( 'Y-m-d H:i:s', $row['created_at'] ),
+						'transaction_date' => wp_date( 'Y-m-d H:i:s', $row['created_at'] ),
 					),
 					array( '%d', '%s', '%s', '%d', '%d', '%s' ),
 				);
@@ -145,11 +161,11 @@ class Rogershood_Points_Migrate_Command extends WP_CLI_Command {
 				'transaction_type' => 'credit',
 				'order_id'         => 0,
 				'points'           => $reward['require_point'],
-				'transaction_date' => date( 'Y-m-d H:i:s' ),
+				'transaction_date' => current_time( 'mysql', false ),
 			);
 
 			$wpdb->insert(
-				$transactions_table,
+				USER_POINTS_TRANSACTIONS_TABLE,
 				$data,
 				array( '%d', '%s', '%s', '%d', '%d', '%s' ),
 			);
