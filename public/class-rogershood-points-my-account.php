@@ -24,9 +24,12 @@ class Rogershood_Points_My_Account {
 	}
 
 	public function add_user_points_to_menu( $items ) {
-		$items['user-points'] = 'Points';
+        // Put the 'user-points' item in the 3rd position
+        $new_items = array_slice( $items, 0, 2, true );
+        $new_items['user-points'] = 'Points';
+        $new_items += array_slice( $items, 2, null, true );
 
-		return $items;
+        return $new_items;
 	}
 
 	public function user_points_content() {
@@ -82,6 +85,10 @@ class Rogershood_Points_My_Account {
         <div class="user-points-transactions">
             <h2>Points Transaction History</h2>
 			<?php
+
+            if (empty($transactions)) {
+                echo '<p>You have not earned any points yet.</p>';
+            }
 			foreach ( $transactions as $transaction ) {
 				// change from MYSQL date to Sep 25, 2024
 				$date_string    = strtotime( $transaction->get_transaction_date() );
@@ -96,15 +103,15 @@ class Rogershood_Points_My_Account {
 
 					if ( $order instanceof WC_Order ) {
 						$order_url     = $order->get_view_order_url();
-						$action_string .= " (Order <a href='{$order_url}'>#{$order_id}</a>)";
+						$action_string .= sprintf( '(Order <a href="%s">#%s</a>)', esc_url( $order_url ), esc_html( $order_id ) );
 					}
 				}
 
 				?>
                 <div class="user-points-transaction">
-                    <p class="user-points-transaction__date"><?php echo $date_formatted; ?></p>
-                    <p class="user-points-transaction__points"><?php echo $points_string ?></p>
-                    <p class="user-points-transaction__action"><?php echo $action_string; ?></p>
+                    <p class="user-points-transaction__date"><?php echo esc_html( $date_formatted ); ?></p>
+                    <p class="user-points-transaction__points"><?php echo esc_html( $points_string ) ?></p>
+                    <p class="user-points-transaction__action"><?php echo esc_html( $action_string ); ?></p>
                 </div>
 				<?php
 			}

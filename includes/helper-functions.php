@@ -27,3 +27,17 @@ function rh_get_points_per_dollar_redeemed() {
 
 	return $points_settings['points_per_dollar_redeemed'] ?? 1;
 }
+
+function rh_get_potential_points($product) {
+
+	// if product is class wc_product
+	if ( is_a( $product, 'WC_Product' ) ) {
+		$settings          = get_option( 'rogershood_points_settings' );
+		$points_per_dollar = $settings['points_earned_per_dollar'] ?? 1;
+
+		return $product->get_data()['price'] * $points_per_dollar;
+	}
+
+	return 0;
+
+}

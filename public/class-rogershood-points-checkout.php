@@ -11,6 +11,7 @@ class Rogershood_Points_Checkout {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
 		// cart
+		add_action( 'woocommerce_cart_item_name', array( $this, 'add_point_to_the_product_name' ), 10, 2 );
 		add_action( 'woocommerce_before_cart', array( $this, 'show_potential_points' ), 10 );
 		add_action( 'woocommerce_after_cart_table', array( $this, 'redeem_points_form' ), 100 );
 
@@ -48,6 +49,17 @@ class Rogershood_Points_Checkout {
 			) );
 		}
 	}
+
+    public function add_point_to_the_product_name($content, $cart_item) {
+
+	    if(is_cart()) {
+		    $product_id = $cart_item['product_id'];
+		    $product    = wc_get_product( $product_id );
+		    $points     = rh_get_potential_points( $product );
+		    $content    = $content . ' <div class="cart-product-name__point">Earn ' . $points . ' points</div>';
+	    }
+        return $content;
+    }
 
 	public function show_potential_points() {
 
@@ -90,7 +102,7 @@ class Rogershood_Points_Checkout {
 			$total_points = $total_after_discount * $points_per_dollar;
 		}
 
-		echo "<p>You could earn $total_points points with this order.</p>";
+		printf( '<p>You could earn %s points with this order.</p>', esc_html( $total_points ) );
 
 	}
 
@@ -178,9 +190,9 @@ class Rogershood_Points_Checkout {
 		$style       = $redeemable_points > 0 ? '' : 'display:none';
 
 		?>
-        <div id="redeem-points-container" style="<?php echo $style ?>">
-            <button type="button" class="button" id="redeem-points-button" data-user-points="<?php echo $user_points ?>"
-                    data-points-to-redeem="<?php echo $redeemable_points ?>"><?php echo $button_text ?></button>
+        <div id="redeem-points-container" style="<?php echo esc_attr( $style ) ?>">
+            <button type="button" class="button" id="redeem-points-button" data-user-points="<?php echo esc_attr( $user_points ) ?>"
+                    data-points-to-redeem="<?php echo esc_attr( $redeemable_points ) ?>"><?php echo esc_html( $button_text ) ?></button>
             <div id="points-message"></div>
         </div>
 
@@ -197,12 +209,14 @@ class Rogershood_Points_Checkout {
 			return;
 		}
 
+		// Verify intent? So we need to check for the nonce.
+
 		$redeemed_points = WC()->session->get( 'redeemed_points', 0 );
 
 		$user_id          = get_current_user_id();
 		$points_instance  = new Rogershood_Points( $user_id );
 		$user_points      = $points_instance->get_current_points();
-		$points_to_redeem = $_POST['points'];
+		$points_to_redeem = absint( $_POST['points'] );
 
 		if ( $user_points <= 0 ) {
 			wc_add_notice( 'You have no points to redeem.', 'error' );
@@ -329,7 +343,7 @@ class Rogershood_Points_Checkout {
 			$redeemed_points = WC()->session->get( 'redeemed_points', 0 );
 
 			if ( $redeemed_points > $user_points ) {
-				wc_add_notice( 'You do not have ' . $redeemed_points . ' points to redeem. Please try again.', 'error' );
+				wc_add_notice( 'You do not have ' . esc_html( $redeemed_points ) . ' points to redeem. Please try again.', 'error' );
 				// remove the redeemed points from the session
 				WC()->session->set( 'redeemed_points', 0 );
 
@@ -395,10 +409,8 @@ class Rogershood_Points_Checkout {
 			$points_instance = new Rogershood_Points( get_current_user_id() );
 
 			if ( $points > 0 ) {
-				echo '<p>Congratulations! You have earned ' . $points . ' points with this order. You have a total of ' . $points_instance->get_current_points() . ' points.</p>';
+				echo '<p>Congratulations! You have earned ' . esc_html( $points ) . ' points with this order. You have a total of ' . $points_instance->get_current_points() . ' points.</p>';
 			}
 		}
 	}
 }
-
-
