@@ -87,13 +87,17 @@ class Rogershood_Points_Admin {
 	public function admin_page() {
 
 		$this->user_points_list_table->prepare_items();
+		$page = $_REQUEST['page'] ?? 1;
+		$orderby = $_GET['orderby'] ?? '';
+		$order = $_GET['order'] ?? '';
+
 		?>
         <div class="wrap">
             <h1 class="wp-heading-inline">Rogershood Points</h1>
             <form method="get">
-                <input type="hidden" name="page" value="<?php echo esc_attr( $_REQUEST['page'] ); ?>" />
-                <input type="hidden" name="orderby" value="<?php echo esc_attr( $_REQUEST['orderby'] ); ?>" />
-                <input type="hidden" name="order" value="<?php echo esc_attr( $_REQUEST['order'] ); ?>" />
+                <input type="hidden" name="page" value="<?php echo esc_attr( $page ); ?>" />
+                <input type="hidden" name="orderby" value="<?php echo esc_attr( $orderby ); ?>" />
+                <input type="hidden" name="order" value="<?php echo esc_attr( $order ); ?>" />
                 <?php
 				$this->user_points_list_table->views();
 				$this->user_points_list_table->search_box( 'Search', 'search_id' );
@@ -149,14 +153,14 @@ class Rogershood_Points_Admin {
                 </div>
                 <div>
                     <h3>Total Points</h3>
-                    <p><?php echo $points->get_total_points(); ?></p>
+                    <p><?= esc_html( $points->get_total_points() ) ?></p>
                 </div>
             </div>
-            <form action="<?php echo $admin_post_url ?>" method="post" id="adjust-points" style="display:none;">
+            <form action="<?= esc_url( $admin_post_url ) ?>" method="post" id="adjust-points" style="display:none;">
                 <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                 <input type="hidden" name="action" value="adjust_points">
-                <input type="hidden" name="nonce" value="<?php echo $nonce; ?>">
-                <input type="number" value="<?php echo $points->get_current_points(); ?>" name="points">
+                <input type="hidden" name="nonce" value="<?= esc_attr( $nonce ); ?>">
+                <input type="number" value="<?= esc_attr( $points->get_current_points() ) ?>" name="points">
                 <input type="submit" value="Adjust Points" class="button">
                 <button class="button"
                         onclick="document.getElementById('adjust-points').style.display = 'none'; return false;">Cancel
@@ -177,7 +181,7 @@ class Rogershood_Points_Admin {
 
                     if (!empty($transaction->get_order_id())) {
                         $order_admin_url = admin_url('admin.php?page=wc-orders&action=edit&id=' . $transaction->get_order_id() );
-                        $action .= ' (Order <a href="' . $order_admin_url . '">#' . $transaction->get_order_id() . '</a>)';
+                        $action .= ' (Order <a href="' . esc_url( $order_admin_url ) . '">#' . esc_html( $transaction->get_order_id() ) . '</a>)';
 //                        $action .= ' (Order #' . $transaction->get_order_id() . ')';
                     }
 					$points = $transaction->get_transaction_type() === 'debit' ? '-' . $transaction->get_points() : $transaction->get_points();
@@ -218,7 +222,7 @@ class Rogershood_Points_Admin {
 
 			$transaction = new Rogershood_Points_Transaction( $user_id, $points_to_deduct, 'debit', 'admin_adjustment' );
 			$transaction->save();
-			wp_redirect( admin_url( 'admin.php?page=rogershood_user_points_edit&user_id=' . $user_id . '&points_updated=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=rogershood_user_points_edit&user_id=' . $user_id . '&points_updated=1' ) );
 
 		} else if ( $points->get_current_points() < $new_point_balance ) {
 			$points_to_add = $new_point_balance - $points->get_current_points();
@@ -226,10 +230,10 @@ class Rogershood_Points_Admin {
 			$points->earn_points( $points_to_add );
 			$transaction = new Rogershood_Points_Transaction( $user_id, $points_to_add, 'credit', 'admin_adjustment' );
 			$transaction->save();
-			wp_redirect( admin_url( 'admin.php?page=rogershood_user_points_edit&user_id=' . $user_id . '&points_updated=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=rogershood_user_points_edit&user_id=' . $user_id . '&points_updated=1' ) );
 
 		} else {
-			wp_redirect( admin_url( 'admin.php?page=rogershood_user_points_edit&user_id=' . $user_id ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=rogershood_user_points_edit&user_id=' . $user_id ) );
 		}
 
 	}
@@ -293,7 +297,7 @@ class Rogershood_Points_Admin {
 	}
 
 	public function handle_points_settings_form() {
-		if ( isset( $_POST['rogershood_points_settings_nonce'] ) && wp_verify_nonce( $_POST['rogershood_points_settings_nonce'], 'save_points_settings' ) ) {
+		if ( isset( $_POST['rogershood_points_settings_nonce'] ) && wp_verify_nonce( $_POST['rogershood_points_settings_nonce'], 'save_points_settings' ) && current_user_can( 'manage_options' ) ) {
 			// Prepare the array to save both settings
 			$points_settings = array(
 				'points_earned_per_dollar'   => isset( $_POST['points_earned_per_dollar'] ) ? absint( $_POST['points_earned_per_dollar'] ) : 1,
@@ -305,7 +309,7 @@ class Rogershood_Points_Admin {
 			update_option( 'rogershood_points_settings', $points_settings );
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=rogershood_points_settings&updated=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=rogershood_points_settings&updated=1' ) );
 	}
 
 }

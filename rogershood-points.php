@@ -16,18 +16,18 @@ global $wpdb;
 define( 'USER_POINTS_TABLE', $wpdb->prefix . 'rogershood_user_points' );
 define( 'USER_POINTS_TRANSACTIONS_TABLE', $wpdb->prefix . 'rogershood_user_points_transactions' );
 
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-rogershood-points.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-rogershood-points-transaction.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/helper-functions.php';
+require RH_POINTS_PLUGIN_DIR . 'includes/class-rogershood-points.php';
+require RH_POINTS_PLUGIN_DIR . 'includes/class-rogershood-points-transaction.php';
+require RH_POINTS_PLUGIN_DIR . 'includes/helper-functions.php';
 
-require_once plugin_dir_path( __FILE__ ) . 'admin/class-rogershood-points-admin.php';
-require_once plugin_dir_path( __FILE__ ) . 'admin/class-rogershood-points-migrate.php';
+require RH_POINTS_PLUGIN_DIR . 'admin/class-rogershood-points-admin.php';
+require RH_POINTS_PLUGIN_DIR . 'admin/class-rogershood-points-migrate.php';
 
-require_once plugin_dir_path( __FILE__ ) . 'public/class-rogershood-points-checkout.php';
-require_once plugin_dir_path( __FILE__ ) . 'public/class-rogershood-points-my-account.php';
-require_once plugin_dir_path( __FILE__ ) . 'public/class-rogershood-points-order.php';
-require_once plugin_dir_path( __FILE__ ) . 'public/class-rogershood-points-shop.php';
-require_once plugin_dir_path( __FILE__ ) . 'public/class-rogershood-points-registration.php';
+require RH_POINTS_PLUGIN_DIR . 'public/class-rogershood-points-checkout.php';
+require RH_POINTS_PLUGIN_DIR . 'public/class-rogershood-points-my-account.php';
+require RH_POINTS_PLUGIN_DIR . 'public/class-rogershood-points-order.php';
+require RH_POINTS_PLUGIN_DIR . 'public/class-rogershood-points-shop.php';
+require RH_POINTS_PLUGIN_DIR . 'public/class-rogershood-points-registration.php';
 
 function rogershood_points_init() {
 
@@ -73,17 +73,16 @@ function rh_points_install() {
         user_id BIGINT(20) UNSIGNED NOT NULL,
         points INT(11) NOT NULL,
         transaction_type VARCHAR(20) NOT NULL, /* 'credit' or 'debit' */
-        action_type VARCHAR(255) NOT NULL, 
+        action_type VARCHAR(255) NOT NULL,
         order_id BIGINT(20) UNSIGNED,
         transaction_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
         KEY user_id (user_id)
     ) $charset_collate;";
 
-	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	require( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta( $sql1 );
 	dbDelta( $sql2 );
 }
 
 register_activation_hook( __FILE__, 'rh_points_install' );
-

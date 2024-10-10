@@ -115,8 +115,9 @@ class Rogershood_Points {
 		);
 
 		// If the update was not successful, insert a new row
-		if ( $updated === false || $updated === 0 ) {
-			$wpdb->insert(
+		if ( ! $updated ) {
+			// We use 'replace' instead of 'insert' to avoid duplicate entries.
+			$wpdb->replace(
 				USER_POINTS_TABLE,
 				array(
 					'user_id'         => $this->user_id,

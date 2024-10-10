@@ -104,9 +104,9 @@ class Rogershood_Points_Migrate_Command extends WP_CLI_Command {
 		do {
 			// Fetch 2000 records at a time with the current offset
 			$query = $wpdb->prepare(
-				"SELECT u.ID, wc.action_type, wc.transaction_type, wc.order_id, wc.points, wc.created_at 
-                FROM $wployalty_table wc 
-                JOIN $user_table u ON wc.user_email = u.user_email 
+				"SELECT u.ID, wc.action_type, wc.transaction_type, wc.order_id, wc.points, wc.created_at
+                FROM $wployalty_table wc
+                JOIN $user_table u ON wc.user_email = u.user_email
                 LIMIT %d OFFSET %d",
 				$batch_size, $offset
 			);

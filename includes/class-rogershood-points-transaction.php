@@ -70,7 +70,8 @@ class Rogershood_Points_Transaction {
 			), array( '%d' ) );
 		} else {
 			// Insert new transaction
-			$wpdb->insert( USER_POINTS_TRANSACTIONS_TABLE, $data, array( '%d', '%d', '%s', '%s', '%s', '%d' ) );
+			// We use 'replace' instead of 'insert' to avoid duplicate entries.
+			$wpdb->replace( USER_POINTS_TRANSACTIONS_TABLE, $data, array( '%d', '%d', '%s', '%s', '%s', '%d' ) );
 
 			$this->id = $wpdb->insert_id;
 		}
